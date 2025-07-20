@@ -18,15 +18,15 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('send-code')
-  async sendCode(@Body('phoneNumber') phoneNumber: string, @Request() req) {
+  async sendCode(@Body('email') email: string, @Request() req) {
     const ip =
       req.ip || req.headers['x-forwarded-for'] || req.connection?.remoteAddress;
-    return this.authService.sendCode(phoneNumber, ip);
+    return this.authService.sendCode(email, ip);
   }
 
   @Post('verify-code')
-  async verifyCode(@Body() body: { phoneNumber: string; code: string }) {
-    return this.authService.verifyCode(body.phoneNumber, body.code);
+  async verifyCode(@Body() body: { email: string; code: string }) {
+    return this.authService.verifyCode(body.email, body.code);
   }
 
   @UseGuards(LocalAuthGuard)
