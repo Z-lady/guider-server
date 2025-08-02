@@ -6,6 +6,8 @@ import {
   Request,
   Get,
   Req,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterAuthDto } from './dto/register-auth.dto';
@@ -26,7 +28,18 @@ export class AuthController {
 
   @Post('verify-code')
   async verifyCode(@Body() body: { email: string; code: string }) {
-    return this.authService.verifyCode(body.email, body.code);
+    try {
+      return await this.authService.verifyCode(body.email, body.code);
+    } catch (error) {
+      console.error('验证码校验失败:', error.message);
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        error.message || '验证码校验失败',
+        HttpStatus.BAD_REQUEST
+      );
+    }
   }
 
   @UseGuards(LocalAuthGuard)
@@ -51,5 +64,20 @@ export class AuthController {
   @Get('me')
   getProfile(@Req() req) {
     return req.user;
+  }
+
+  // 新增：获取完整用户信息接口
+  @UseGuards(JwtAuthGuard)
+  @Get('user-info')
+  async getUserInfo(@Req() req) {
+    try {
+      return await this.authService.getUserFullInfo(req.user.id);
+    } catch (error) {
+      console.error('获取用户信息失败:', error.message);
+      throw new HttpException(
+        '获取用户信息失败',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 }

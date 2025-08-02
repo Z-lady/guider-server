@@ -1,4 +1,4 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
 import { RegisterAuthDto } from './dto/register-auth.dto';
@@ -172,10 +172,10 @@ export class AuthService {
   async verifyCode(email: string, code: string): Promise<any> {
     const entry = codeStore.get(email);
     if (!entry || entry.expires < Date.now()) {
-      throw new Error('验证码已过期，请重新获取');
+      throw new BadRequestException('验证码已过期，请重新获取');
     }
     if (entry.code !== code) {
-      throw new Error('验证码错误');
+      throw new UnauthorizedException('验证码错误');
     }
     // 验证通过后删除验证码
     codeStore.delete(email);
@@ -196,5 +196,32 @@ export class AuthService {
       console.log('老用户登录:', email);
     }
     return this.login(user);
+  }
+
+  // 在 AuthService 类中添加新方法
+  async getUserFullInfo(userId: string): Promise<any> {
+    try {
+      // 将 string 类型的 userId 转换为 number 类型
+      const user = await this.userService.findById(Number(userId));
+      if (!user) {
+        throw new Error('用户不存在');
+      }
+      // 返回完整用户信息，排除敏感字段
+      const { password, ...userInfo } = user;
+      return {
+        id: userInfo.id,
+        email: userInfo.email,
+        phoneNumber: userInfo.phoneNumber,
+        nickname: userInfo.nickname,
+        avatar: userInfo.avatar,
+        bio: userInfo.bio,
+        isProfileComplete: userInfo.isProfileComplete,
+        createdAt: userInfo.createdAt,
+        updatedAt: userInfo.updatedAt,
+      };
+    } catch (error) {
+      console.error('获取用户信息失败:', error);
+      throw error;
+    }
   }
 }
