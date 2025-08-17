@@ -4,6 +4,16 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
+// 创建新的DTO
+export class UpdateInfoDto {
+  email?: string;
+  phoneNumber?: string;
+  nickname?: string;
+  displayName?: string;
+  avatar?: string;
+  callingCode?: string;
+}
+
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -16,7 +26,6 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Request() req) {
-    // 从 JWT token 中获取用户 ID
     const userId = req.user?.sub;
     if (!userId) {
       throw new Error('User not authenticated');
@@ -27,12 +36,22 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Patch('profile')
   updateProfile(@Request() req, @Body() updateUserDto: UpdateUserDto) {
-    // 从 JWT token 中获取用户 ID
     const userId = req.user?.sub;
     if (!userId) {
       throw new Error('User not authenticated');
     }
     return this.userService.update(userId, updateUserDto);
+  }
+
+  // 新增的信息修改接口
+  @UseGuards(JwtAuthGuard)
+  @Post('update-info')
+  updateInfo(@Request() req, @Body() updateInfoDto: UpdateInfoDto) {
+    const userId = req.user?.sub;
+    if (!userId) {
+      throw new Error('User not authenticated');
+    }
+    return this.userService.updateUserInfo(userId, updateInfoDto);
   }
 
   @Get(':id')

@@ -13,7 +13,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    // 返回包含 id 字段的用户对象，保持与控制器期望一致
-    return { id: payload.sub, email: payload.email };
+    // 返回包含 sub 字段的用户对象，保持与控制器期望一致
+    return { 
+      sub: payload.sub, 
+      id: payload.sub, 
+      email: payload.email 
+    };
   }
 }

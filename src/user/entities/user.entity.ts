@@ -20,6 +20,9 @@ export class User {
   @Column({ type: 'varchar', length: 50, nullable: true })
   phoneNumber: string | null;
 
+  @Column({ type: 'varchar', length: 10, nullable: true })
+  callingCode: string | null;
+
   @Column({ type: 'varchar', length: 255, nullable: true })
   password: string | null;
 
